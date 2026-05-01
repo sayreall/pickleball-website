@@ -1,92 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
 
-const tabs = ["All", "Beginner", "Intermediate", "Advanced"];
-
-const sessions = [
-  {
-    day: "Monday",
-    time: "6:00-8:00 AM",
-    name: "Morning Open Play",
-    level: "Beginner",
-    court: "Courts 1-3",
-    availability: "Open",
-    status: "open",
-    action: "Reserve",
-  },
-  {
-    day: "Monday",
-    time: "7:00-9:00 PM",
-    name: "Evening Intermediate",
-    level: "Intermediate",
-    court: "Courts 4-6",
-    availability: "Limited",
-    status: "limited",
-    action: "Reserve",
-  },
-  {
-    day: "Tuesday",
-    time: "6:30-8:30 AM",
-    name: "Beginner Foundations",
-    level: "Beginner",
-    court: "Courts 1-2",
-    availability: "Open",
-    status: "open",
-    action: "Reserve",
-  },
-  {
-    day: "Wednesday",
-    time: "7:00-9:00 PM",
-    name: "Competitive Ladder",
-    level: "Advanced",
-    court: "Court 6",
-    availability: "Waitlist",
-    status: "full",
-    action: "Join Waitlist",
-  },
-  {
-    day: "Thursday",
-    time: "7:00-9:00 PM",
-    name: "Intermediate Rally",
-    level: "Intermediate",
-    court: "Courts 3-5",
-    availability: "Limited",
-    status: "limited",
-    action: "Reserve",
-  },
-  {
-    day: "Friday",
-    time: "6:00-9:00 PM",
-    name: "Friday Social Night",
-    level: "Open",
-    court: "All Courts",
-    availability: "Limited",
-    status: "limited",
-    action: "Reserve",
-  },
-  {
-    day: "Saturday",
-    time: "7:00-11:00 AM",
-    name: "Weekend Open Play",
-    level: "Open",
-    court: "Courts 1-5",
-    availability: "Open",
-    status: "open",
-    action: "Reserve",
-  },
-  {
-    day: "Sunday",
-    time: "4:00-6:00 PM",
-    name: "Advanced Drills",
-    level: "Advanced",
-    court: "Courts 5-6",
-    availability: "Open",
-    status: "open",
-    action: "Reserve",
-  },
-];
+const tabs = ["All", "Beginner", "Intermediate", "Advanced", "Open"];
 
 const levelStyles = {
   Beginner: "bg-lime/20 text-[#5a7a1f]",
@@ -96,13 +14,47 @@ const levelStyles = {
 };
 
 const availabilityStyles = {
-  open: "bg-emerald-500",
-  limited: "bg-amber-500",
-  full: "bg-red-500",
+  Open: "bg-emerald-500",
+  Limited: "bg-amber-500",
+  Waitlist: "bg-red-500",
+  Full: "bg-red-500",
 };
+
+const dayOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 export default function SchedulePage() {
   const [activeFilter, setActiveFilter] = useState("All");
+  const [sessions, setSessions] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchSessions() {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("sessions")
+        .select("*")
+        .eq("is_active", true)
+        .order("start_time", { ascending: true });
+
+      // Sort by day of week
+      const sorted = (data || []).sort((a, b) => {
+        return dayOrder.indexOf(a.day_of_week) - dayOrder.indexOf(b.day_of_week);
+      });
+      
+      setSessions(sorted);
+      setLoading(false);
+    }
+    fetchSessions();
+  }, []);
+
+  const formatTime = (timeStr) => {
+    if (!timeStr) return "";
+    const [hours, minutes] = timeStr.split(":");
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? "PM" : "AM";
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
+  };
 
   const primaryButton =
     "inline-flex items-center justify-center rounded-full bg-lime px-6 py-3 text-sm font-semibold text-navy shadow-[0_10px_24px_rgba(191,255,0,0.35)] transition hover:-translate-y-0.5";
@@ -114,7 +66,7 @@ export default function SchedulePage() {
   const filteredSessions =
     activeFilter === "All"
       ? sessions
-      : sessions.filter((session) => session.level === activeFilter);
+      : sessions.filter((session) => session.skill_level === activeFilter);
 
   return (
     <div className="bg-off-white pt-32 pb-24">
@@ -145,52 +97,66 @@ export default function SchedulePage() {
         </div>
 
         <div className="mt-8 overflow-x-auto rounded-2xl bg-white shadow-[0_12px_30px_rgba(10,22,40,0.08)]">
-          <table className="w-full min-w-[720px] text-left text-sm">
-            <thead className="bg-[#f3f5ee] text-navy">
-              <tr>
-                <th className="px-6 py-4 font-semibold">Day</th>
-                <th className="px-6 py-4 font-semibold">Time</th>
-                <th className="px-6 py-4 font-semibold">Session</th>
-                <th className="px-6 py-4 font-semibold">Level</th>
-                <th className="px-6 py-4 font-semibold">Court</th>
-                <th className="px-6 py-4 font-semibold">Availability</th>
-                <th className="px-6 py-4 font-semibold"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredSessions.map((session) => (
-                <tr key={`${session.day}-${session.time}`} className="border-t border-[#e3e5df]">
-                  <td className="px-6 py-4 font-medium text-navy">{session.day}</td>
-                  <td className="px-6 py-4 text-navy/80">{session.time}</td>
-                  <td className="px-6 py-4 text-navy">{session.name}</td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${
-                        levelStyles[session.level]
-                      }`}
-                    >
-                      {session.level}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-navy/80">{session.court}</td>
-                  <td className="px-6 py-4">
-                    <span className="flex items-center gap-2 text-navy">
-                      <span className={`h-2.5 w-2.5 rounded-full ${availabilityStyles[session.status]}`} />
-                      {session.availability}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <button
-                      type="button"
-                      className={session.status === "full" ? smallButtonOutline : smallButton}
-                    >
-                      {session.action}
-                    </button>
-                  </td>
+          {loading ? (
+            <div className="py-12 text-center text-muted">Loading sessions...</div>
+          ) : (
+            <table className="w-full min-w-[720px] text-left text-sm">
+              <thead className="bg-[#f3f5ee] text-navy">
+                <tr>
+                  <th className="px-6 py-4 font-semibold">Day</th>
+                  <th className="px-6 py-4 font-semibold">Time</th>
+                  <th className="px-6 py-4 font-semibold">Session</th>
+                  <th className="px-6 py-4 font-semibold">Level</th>
+                  <th className="px-6 py-4 font-semibold">Court</th>
+                  <th className="px-6 py-4 font-semibold">Availability</th>
+                  <th className="px-6 py-4 font-semibold"></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredSessions.length > 0 ? (
+                  filteredSessions.map((session) => (
+                    <tr key={session.id} className="border-t border-[#e3e5df]">
+                      <td className="px-6 py-4 font-medium text-navy">{session.day_of_week}</td>
+                      <td className="px-6 py-4 text-navy/80">
+                        {formatTime(session.start_time)} - {formatTime(session.end_time)}
+                      </td>
+                      <td className="px-6 py-4 text-navy">{session.name}</td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${
+                            levelStyles[session.skill_level] || "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {session.skill_level}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-navy/80">{session.court}</td>
+                      <td className="px-6 py-4">
+                        <span className="flex items-center gap-2 text-navy">
+                          <span className={`h-2.5 w-2.5 rounded-full ${availabilityStyles[session.availability] || "bg-gray-400"}`} />
+                          {session.availability}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <Link
+                          href="/join"
+                          className={session.availability === "Full" || session.availability === "Waitlist" ? smallButtonOutline : smallButton}
+                        >
+                          {session.availability === "Full" || session.availability === "Waitlist" ? "Join Waitlist" : "Reserve"}
+                        </Link>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={7} className="px-6 py-12 text-center text-muted">
+                      No sessions found for this filter.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
 
         <div className="mt-6 flex justify-center">

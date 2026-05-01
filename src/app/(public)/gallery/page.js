@@ -1,13 +1,5 @@
 import Link from "next/link";
-
-const galleryItems = [
-  { label: "Morning Open Play", className: "lg:row-span-2 bg-gradient-to-br from-sky to-navy" },
-  { label: "Competitive Rally", className: "lg:col-span-2 bg-gradient-to-br from-lime to-[#5a7a1f]" },
-  { label: "After-Game Socials", className: "bg-gradient-to-br from-[#ff8a5b] to-[#4a1f1f]" },
-  { label: "Annual Tournament", className: "bg-gradient-to-br from-purple to-[#1f1735]" },
-  { label: "Beginner Clinic", className: "lg:col-span-2 bg-gradient-to-br from-sky to-navy" },
-  { label: "Weekend Open Play", className: "bg-gradient-to-br from-[#f5d142] to-[#8a5b00]" },
-];
+import { createClient } from "@/lib/supabase/server";
 
 const experiencePoints = [
   {
@@ -24,9 +16,38 @@ const experiencePoints = [
   },
 ];
 
-export default function GalleryPage() {
+// Default gallery items when no images are in the database
+const defaultGalleryItems = [
+  { label: "Morning Open Play", className: "lg:row-span-2 bg-gradient-to-br from-sky to-navy" },
+  { label: "Competitive Rally", className: "lg:col-span-2 bg-gradient-to-br from-lime to-[#5a7a1f]" },
+  { label: "After-Game Socials", className: "bg-gradient-to-br from-[#ff8a5b] to-[#4a1f1f]" },
+  { label: "Annual Tournament", className: "bg-gradient-to-br from-purple to-[#1f1735]" },
+  { label: "Beginner Clinic", className: "lg:col-span-2 bg-gradient-to-br from-sky to-navy" },
+  { label: "Weekend Open Play", className: "bg-gradient-to-br from-[#f5d142] to-[#8a5b00]" },
+];
+
+const gridClasses = [
+  "lg:row-span-2",
+  "lg:col-span-2",
+  "",
+  "",
+  "lg:col-span-2",
+  "",
+];
+
+export default async function GalleryPage() {
+  const supabase = await createClient();
+  
+  const { data: galleryImages } = await supabase
+    .from("gallery_images")
+    .select("*")
+    .eq("is_active", true)
+    .order("display_order", { ascending: true });
+
   const primaryButton =
     "inline-flex items-center justify-center rounded-full bg-lime px-6 py-3 text-sm font-semibold text-navy shadow-[0_10px_24px_rgba(191,255,0,0.35)] transition hover:-translate-y-0.5";
+
+  const hasImages = galleryImages && galleryImages.length > 0;
 
   return (
     <div className="bg-navy pt-32 pb-24 text-white">
@@ -58,15 +79,32 @@ export default function GalleryPage() {
           </Link>
         </div>
         <div className="grid auto-rows-[140px] gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {galleryItems.map((item) => (
-            <div
-              key={item.label}
-              className={`relative flex items-end overflow-hidden rounded-2xl p-4 ${item.className}`}
-            >
-              <div className="absolute inset-0 bg-gradient-to-t from-navy/80 via-navy/30 to-transparent" />
-              <span className="relative text-sm font-semibold">{item.label}</span>
-            </div>
-          ))}
+          {hasImages ? (
+            galleryImages.map((image, index) => (
+              <div
+                key={image.id}
+                className={`relative flex items-end overflow-hidden rounded-2xl p-4 ${gridClasses[index % gridClasses.length]}`}
+              >
+                <img 
+                  src={image.image_url} 
+                  alt={image.title || "Gallery image"}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-navy/80 via-navy/30 to-transparent" />
+                <span className="relative text-sm font-semibold">{image.title}</span>
+              </div>
+            ))
+          ) : (
+            defaultGalleryItems.map((item) => (
+              <div
+                key={item.label}
+                className={`relative flex items-end overflow-hidden rounded-2xl p-4 ${item.className}`}
+              >
+                <div className="absolute inset-0 bg-gradient-to-t from-navy/80 via-navy/30 to-transparent" />
+                <span className="relative text-sm font-semibold">{item.label}</span>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>
