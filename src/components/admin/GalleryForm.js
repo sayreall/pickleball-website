@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export default function GalleryForm({ image }) {
   const router = useRouter();
+  const fileInputRef = useRef(null);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState("");
 
   const [formData, setFormData] = useState({
@@ -27,13 +30,90 @@ export default function GalleryForm({ image }) {
     }));
   };
 
+  const handleFileSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setError("");
+
+    // Validate file type
+    const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
+    if (!validTypes.includes(file.type)) {
+      setError("Invalid file type. Please upload JPG, PNG, WEBP, or GIF.");
+      return;
+    }
+
+    // Validate file size (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      setError("File too large. Maximum size is 10MB.");
+      return;
+    }
+
+    setUploading(true);
+    setUploadProgress(0);
+
+    try {
+      const supabase = createClient();
+
+      // Generate unique filename
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${fileExt}`;
+      const filePath = fileName;
+
+      // Show progress simulation
+      const progressInterval = setInterval(() => {
+        setUploadProgress((prev) => Math.min(prev + 10, 90));
+      }, 200);
+
+      const { error: uploadError } = await supabase.storage
+        .from("gallery")
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+
+      clearInterval(progressInterval);
+
+      if (uploadError) {
+        setError(uploadError.message);
+        setUploading(false);
+        setUploadProgress(0);
+        return;
+      }
+
+      // Get the public URL
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("gallery").getPublicUrl(filePath);
+
+      setUploadProgress(100);
+      setFormData((prev) => ({ ...prev, image_url: publicUrl }));
+
+      setTimeout(() => {
+        setUploading(false);
+        setUploadProgress(0);
+      }, 500);
+    } catch (err) {
+      setError(err.message || "Upload failed");
+      setUploading(false);
+      setUploadProgress(0);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setFormData((prev) => ({ ...prev, image_url: "" }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
     if (!formData.image_url) {
-      setError("Please provide an image URL");
+      setError("Please upload an image");
       setLoading(false);
       return;
     }
@@ -75,39 +155,108 @@ export default function GalleryForm({ image }) {
 
       <div className="space-y-4">
         <div>
-          <label htmlFor="image_url" className="block text-sm font-medium text-gray-700 mb-1">
-            Image URL *
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Image *
           </label>
-          <input
-            type="url"
-            id="image_url"
-            name="image_url"
-            required
-            value={formData.image_url}
-            onChange={handleChange}
-            placeholder="https://example.com/image.jpg"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-          />
-          <p className="mt-1 text-xs text-gray-500">
-            Enter the URL of the image you want to add
-          </p>
-        </div>
 
-        {formData.image_url && (
-          <div>
-            <p className="text-sm font-medium text-gray-700 mb-2">Preview</p>
-            <div className="w-full h-48 bg-gray-100 rounded-lg overflow-hidden">
-              <img
-                src={formData.image_url}
-                alt="Preview"
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.target.style.display = "none";
-                }}
+          {!formData.image_url ? (
+            <div className="relative">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                onChange={handleFileSelect}
+                disabled={uploading}
+                className="sr-only"
+                id="file-upload"
+              />
+              <label
+                htmlFor="file-upload"
+                className={`flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-teal-500 hover:bg-teal-50 transition-colors ${
+                  uploading ? "pointer-events-none opacity-60" : ""
+                }`}
+              >
+                {uploading ? (
+                  <div className="text-center w-full px-6">
+                    <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
+                      <div
+                        className="bg-teal-600 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
+                    <p className="text-sm text-gray-600">Uploading... {uploadProgress}%</p>
+                  </div>
+                ) : (
+                  <>
+                    <svg
+                      className="w-10 h-10 text-gray-400 mb-3"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    <p className="text-sm font-medium text-gray-700">
+                      Click to upload an image
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      JPG, PNG, WEBP, or GIF (max 10MB)
+                    </p>
+                  </>
+                )}
+              </label>
+            </div>
+          ) : (
+            <div className="relative">
+              <div className="w-full h-64 bg-gray-100 rounded-lg overflow-hidden">
+                <img
+                  src={formData.image_url || "/placeholder.svg"}
+                  alt="Preview"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleRemoveImage}
+                className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-2 hover:bg-red-700 transition-colors shadow-lg"
+                title="Remove image"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute bottom-2 right-2 bg-white text-gray-700 rounded-lg px-3 py-1.5 text-xs font-medium hover:bg-gray-50 transition-colors shadow-lg border border-gray-200"
+              >
+                Replace image
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                onChange={handleFileSelect}
+                className="sr-only"
               />
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         <div>
           <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
@@ -210,7 +359,7 @@ export default function GalleryForm({ image }) {
       <div className="flex gap-3 pt-4">
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || uploading}
           className="px-6 py-2 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50"
         >
           {loading ? "Saving..." : image?.id ? "Update Image" : "Add Image"}
