@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import ReservationModal from "@/components/schedule/ReservationModal";
 
 const tabs = ["All", "Beginner", "Intermediate", "Advanced", "Open"];
 
@@ -26,6 +27,7 @@ export default function SchedulePage() {
   const [activeFilter, setActiveFilter] = useState("All");
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [reservingSession, setReservingSession] = useState(null);
 
   useEffect(() => {
     async function fetchSessions() {
@@ -138,12 +140,22 @@ export default function SchedulePage() {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <Link
-                          href="/join"
-                          className={session.availability === "Full" || session.availability === "Waitlist" ? smallButtonOutline : smallButton}
+                        <button
+                          type="button"
+                          onClick={() => setReservingSession(session)}
+                          disabled={session.availability === "Full"}
+                          className={`${
+                            session.availability === "Full" || session.availability === "Waitlist"
+                              ? smallButtonOutline
+                              : smallButton
+                          } disabled:cursor-not-allowed disabled:opacity-50`}
                         >
-                          {session.availability === "Full" || session.availability === "Waitlist" ? "Join Waitlist" : "Reserve"}
-                        </Link>
+                          {session.availability === "Full"
+                            ? "Full"
+                            : session.availability === "Waitlist"
+                            ? "Join Waitlist"
+                            : "Reserve"}
+                        </button>
                       </td>
                     </tr>
                   ))
@@ -165,6 +177,13 @@ export default function SchedulePage() {
           </Link>
         </div>
       </div>
+
+      {reservingSession && (
+        <ReservationModal
+          session={reservingSession}
+          onClose={() => setReservingSession(null)}
+        />
+      )}
     </div>
   );
 }
