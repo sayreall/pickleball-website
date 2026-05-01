@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { getSupabaseClient } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,11 +15,7 @@ export default function LoginPage() {
     event.preventDefault();
     setMessage("");
 
-    const supabase = getSupabaseClient();
-    if (!supabase) {
-      setMessage("Missing Supabase env vars. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.");
-      return;
-    }
+    const supabase = createClient();
 
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
