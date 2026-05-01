@@ -69,6 +69,22 @@ export default function GalleryImageCard({ image }) {
             {image.description}
           </p>
         )}
+        <div className="mt-2 flex flex-wrap gap-2">
+          {image.game_date && (
+            <span className="inline-flex items-center rounded-full bg-teal-50 px-2 py-0.5 text-xs font-medium text-teal-700">
+              {new Date(image.game_date).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </span>
+          )}
+          {image.category && (
+            <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">
+              {image.category}
+            </span>
+          )}
+        </div>
         <div className="flex items-center justify-between mt-4">
           <span className="text-xs text-gray-400">Order: {image.display_order}</span>
           <div className="flex gap-2">

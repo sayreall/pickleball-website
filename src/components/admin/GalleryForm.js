@@ -15,6 +15,8 @@ export default function GalleryForm({ image }) {
     image_url: image?.image_url || "",
     display_order: image?.display_order || 0,
     is_active: image?.is_active ?? true,
+    game_date: image?.game_date || "",
+    category: image?.category || "",
   });
 
   const handleChange = (e) => {
@@ -41,6 +43,8 @@ export default function GalleryForm({ image }) {
     const data = {
       ...formData,
       display_order: parseInt(formData.display_order) || 0,
+      game_date: formData.game_date || null,
+      category: formData.category || null,
     };
 
     let result;
@@ -133,6 +137,43 @@ export default function GalleryForm({ image }) {
           />
         </div>
 
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="game_date" className="block text-sm font-medium text-gray-700 mb-1">
+              Game Date
+            </label>
+            <input
+              type="date"
+              id="game_date"
+              name="game_date"
+              value={formData.game_date}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Date this photo was taken (used to group images)
+            </p>
+          </div>
+
+          <div>
+            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+              Category
+            </label>
+            <input
+              type="text"
+              id="category"
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+              placeholder="e.g. Tournament, Open Play"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Optional event/game category
+            </p>
+          </div>
+        </div>
+
         <div>
           <label htmlFor="display_order" className="block text-sm font-medium text-gray-700 mb-1">
             Display Order
@@ -147,7 +188,7 @@ export default function GalleryForm({ image }) {
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
           />
           <p className="mt-1 text-xs text-gray-500">
-            Lower numbers appear first
+            Lower numbers appear first within the same date
           </p>
         </div>
 
