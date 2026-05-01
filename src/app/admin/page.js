@@ -5,12 +5,24 @@ export default async function AdminDashboard() {
   const supabase = await createClient();
 
   // Fetch counts for dashboard stats
-  const [eventsResult, sessionsResult, membersResult, galleryResult] = await Promise.all([
-    supabase.from("events").select("*", { count: "exact", head: true }),
-    supabase.from("sessions").select("*", { count: "exact", head: true }),
-    supabase.from("members").select("*", { count: "exact", head: true }),
-    supabase.from("gallery_images").select("*", { count: "exact", head: true }),
-  ]);
+  const [eventsResult, sessionsResult, membersResult, galleryResult, pendingReservationsResult] =
+    await Promise.all([
+      supabase.from("events").select("*", { count: "exact", head: true }),
+      supabase.from("sessions").select("*", { count: "exact", head: true }),
+      supabase.from("members").select("*", { count: "exact", head: true }),
+      supabase.from("gallery_images").select("*", { count: "exact", head: true }),
+      supabase
+        .from("reservations")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "pending"),
+    ]);
+
+  // Fetch recent reservations
+  const { data: recentReservations } = await supabase
+    .from("reservations")
+    .select("*, sessions(name, day_of_week)")
+    .order("created_at", { ascending: false })
+    .limit(5);
 
   // Fetch pending members
   const { data: pendingMembers, count: pendingCount } = await supabase
@@ -74,6 +86,17 @@ export default async function AdminDashboard() {
         </svg>
       ),
     },
+    {
+      name: "Pending Reservations",
+      value: pendingReservationsResult.count || 0,
+      href: "/admin/reservations?status=pending",
+      color: "bg-amber-500",
+      icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+        </svg>
+      ),
+    },
   ];
 
   return (
@@ -82,7 +105,7 @@ export default async function AdminDashboard() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Welcome back! Here&apos;s an overview of your SMASH PB website.
+          Welcome back! Here&apos;s an overview of your DeucePB website.
         </p>
       </div>
 
@@ -188,6 +211,64 @@ export default async function AdminDashboard() {
               </div>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Recent Reservations */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+          <div>
+            <h2 className="font-semibold text-gray-900">Recent Reservations</h2>
+            <p className="text-sm text-gray-500">
+              Latest slot reservations from the public schedule
+            </p>
+          </div>
+          <Link
+            href="/admin/reservations"
+            className="text-sm font-medium text-teal-600 hover:text-teal-700"
+          >
+            View all
+          </Link>
+        </div>
+        <div className="divide-y divide-gray-200">
+          {recentReservations && recentReservations.length > 0 ? (
+            recentReservations.map((r) => (
+              <div
+                key={r.id}
+                className="px-6 py-4 flex items-center justify-between gap-4"
+              >
+                <div className="min-w-0">
+                  <p className="font-medium text-gray-900 truncate">{r.full_name}</p>
+                  <p className="text-sm text-gray-500 truncate">
+                    {r.sessions?.name || "Session deleted"}
+                    {r.sessions?.day_of_week && ` · ${r.sessions.day_of_week}`}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="text-xs text-gray-500">
+                    {r.num_players} {r.num_players === 1 ? "player" : "players"}
+                  </span>
+                  <span
+                    className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${
+                      r.status === "pending"
+                        ? "bg-amber-100 text-amber-800"
+                        : r.status === "confirmed"
+                        ? "bg-emerald-100 text-emerald-800"
+                        : r.status === "waitlist"
+                        ? "bg-sky-100 text-sky-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    {r.status}
+                  </span>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="px-6 py-8 text-center text-gray-500">
+              No reservations yet
+            </div>
+          )}
         </div>
       </div>
 

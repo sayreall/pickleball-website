@@ -4,7 +4,7 @@ export default function ContactPage() {
       <div className="mx-auto grid w-full max-w-6xl gap-10 px-6 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="relative min-h-[320px] overflow-hidden rounded-2xl bg-gradient-to-br from-[#d7e3f4] to-[#8bb4f2]">
           <div className="absolute bottom-4 left-4 rounded-xl bg-navy/75 px-4 py-3 text-white">
-            <h3 className="text-lg font-semibold">SMASH PB Courts</h3>
+            <h3 className="text-lg font-semibold">DeucePB Courts</h3>
             <p className="text-sm text-white/70">123 Rally Street, Quezon City</p>
           </div>
         </div>
@@ -24,7 +24,7 @@ export default function ContactPage() {
             </div>
             <div>
               <p className="text-sm font-semibold text-navy">Email</p>
-              <p className="text-sm text-muted">hello@smashpb.com</p>
+              <p className="text-sm text-muted">hello@deucepb.com</p>
             </div>
             <div>
               <p className="text-sm font-semibold text-navy">Hours</p>

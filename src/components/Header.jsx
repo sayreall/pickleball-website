@@ -73,7 +73,7 @@ export default function Header() {
               </svg>
             </span>
             <span className="text-2xl font-display tracking-wide">
-              SMASH<span className="text-lime">PB</span>
+              Deuce<span className="text-lime">PB</span>
             </span>
           </Link>
           <nav className="hidden items-center gap-1 text-sm font-semibold lg:flex">

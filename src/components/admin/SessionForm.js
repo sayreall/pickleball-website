@@ -21,6 +21,7 @@ export default function SessionForm({ session }) {
     skill_level: session?.skill_level || "Open",
     court: session?.court || "",
     availability: session?.availability || "Open",
+    max_players: session?.max_players || 12,
     is_active: session?.is_active ?? true,
   });
 
@@ -153,7 +154,7 @@ export default function SessionForm({ session }) {
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label htmlFor="skill_level" className="block text-sm font-medium text-gray-700 mb-1">
               Skill Level *
@@ -172,6 +173,22 @@ export default function SessionForm({ session }) {
                 </option>
               ))}
             </select>
+          </div>
+          <div>
+            <label htmlFor="max_players" className="block text-sm font-medium text-gray-700 mb-1">
+              Max Players
+            </label>
+            <input
+              type="number"
+              id="max_players"
+              name="max_players"
+              min="1"
+              max="100"
+              value={formData.max_players}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+            />
+            <p className="mt-1 text-xs text-gray-500">Maximum capacity for this session</p>
           </div>
           <div>
             <label htmlFor="availability" className="block text-sm font-medium text-gray-700 mb-1">

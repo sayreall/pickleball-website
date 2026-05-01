@@ -41,7 +41,7 @@ export default function LoginPage() {
               Head Admin Login
             </h1>
             <p className="mt-3 text-sm text-muted">
-              Sign in with your admin email to manage the SMASH PB website.
+              Sign in with your admin email to manage the DeucePB website.
             </p>
           </div>
 
