@@ -14,7 +14,7 @@ const dmSans = DM_Sans({
 });
 
 export const metadata = {
-  title: "SMASH Pickleball Club | Play. Connect. Compete.",
+  title: "DeucePB | Play. Connect. Compete.",
   description:
     "Join the most welcoming pickleball community in Metro Manila. Sessions for all skill levels. First game free.",
 };

@@ -52,7 +52,7 @@ export default function Home() {
               Play. <span className="text-lime">Connect</span>. Compete.
             </h1>
             <p className="text-lg text-white/80">
-              SMASH PB is a welcoming club for every level, from first-time players to fierce competitors. Show up,
+              DeucePB is a welcoming club for every level, from first-time players to fierce competitors. Show up,
               meet new friends, and play your best game.
             </p>
           </div>
@@ -106,7 +106,7 @@ export default function Home() {
         <div className="mx-auto flex w-full max-w-5xl flex-col items-center gap-6 px-6 text-center">
           <h2 className="text-4xl font-display tracking-wider sm:text-5xl">Ready to claim your spot?</h2>
           <p className="max-w-2xl text-white/70">
-            Join SMASH PB today and get matched with the right session for your level. First game is on us.
+            Join DeucePB today and get matched with the right session for your level. First game is on us.
           </p>
           <Link className={primaryButton} href="/join">
             Join Now

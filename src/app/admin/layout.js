@@ -3,8 +3,8 @@ import { redirect } from "next/navigation";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 
 export const metadata = {
-  title: "Admin Dashboard | SMASH PB",
-  description: "Manage your SMASH Pickleball website",
+  title: "Admin Dashboard | DeucePB",
+  description: "Manage your DeucePB website",
 };
 
 export default async function AdminLayout({ children }) {

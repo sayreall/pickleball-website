@@ -75,7 +75,7 @@ export default async function GalleryPage() {
         <div className="grid gap-12 lg:grid-cols-2">
           <div>
             <span className="inline-flex items-center rounded-full bg-lime/20 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-lime">
-              The SMASH Experience
+              The DeucePB Experience
             </span>
             <h1 className="mt-4 text-4xl font-display tracking-wider sm:text-5xl">
               Real Games. Real People. Real Fun.

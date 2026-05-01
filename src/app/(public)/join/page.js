@@ -114,7 +114,7 @@ export default function JoinPage() {
             </div>
           </div>
           <button type="submit" className={primaryButton}>
-            Join SMASH PB - Start Today
+            Join DeucePB - Start Today
           </button>
           <p className="text-sm text-white/70">Cancel anytime. You are in control of your membership.</p>
           {submitted ? (

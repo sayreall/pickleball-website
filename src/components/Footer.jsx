@@ -15,7 +15,7 @@ export default function Footer() {
       <div className="mx-auto grid w-full max-w-6xl gap-8 px-6 text-center md:grid-cols-3 md:text-left">
         <div>
           <div className="text-2xl font-display tracking-wide">
-            SMASH<span className="text-lime">PB</span>
+            Deuce<span className="text-lime">PB</span>
           </div>
           <p className="mt-2 text-sm text-white/70">Play. Connect. Compete.</p>
         </div>
@@ -36,7 +36,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="mt-8 text-center text-xs text-white/60">
-        Copyright {new Date().getFullYear()} SMASH Pickleball Club - Quezon City, Philippines
+        Copyright {new Date().getFullYear()} DeucePB - Quezon City, Philippines
       </div>
     </footer>
   );

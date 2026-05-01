@@ -55,7 +55,7 @@ export default function WhyJoinPage() {
             More Than a Game. It&#39;s a Community.
           </h1>
           <p className="mt-4 text-muted">
-            SMASH PB is built on friendly competition, inclusive play, and unforgettable social moments on and off the
+            DeucePB is built on friendly competition, inclusive play, and unforgettable social moments on and off the
             court.
           </p>
         </div>
